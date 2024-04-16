@@ -2,22 +2,24 @@
 pragma solidity ^0.8.0;
 
 contract BoilerGotchi {
-    uint256 public value;
-
-    event ValueChanged(uint256 newValue);
-
-    function setValue(uint256 newValue) public {
-        value = newValue;
-        emit ValueChanged(newValue);
-    }
-
-    function getValue() public view returns (uint256) {
-        return value;
-    }
-
+	struct Gotchi {
+		string name;
+		uint256 mood;
+		uint256 energy;
+		address owner;
+	}
+    
 	function feed() public {
 		// Feed the gotchi and raise the energy level and happiness value
 		// Require gotchi exist and its energy isn't full
+	}
+
+	// Get the mood of a BoilerGotchi using the name
+	function getMood (string name) public {
+	}
+
+	// Set the mood of a BoilerGotchi using the name
+	function setMood (string name) public {
 	}
 }
 
