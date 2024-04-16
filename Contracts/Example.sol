@@ -41,4 +41,13 @@ contract BoilerGotchi {
             return "Suicidal"; // Suicidal if mood has score -1 (hasn't been played or fed in 365 days)
         }
 	}
+
+	function checkStatus(uint256 id) public view returns (string memory) {
+        Gotchi storage g = gotchis[id];
+		//check if gotchi is suicidal and update mood
+        checkSuicidal(id);
+		//get the mood of gotchi
+        string memory moodDescription = getMood(id);
+        return string(abi.encodePacked("Name: ", g.name, "\nMood: ", moodDescription, "\nEnergy: ", uint256ToString(g.energy)));
+    }
 }
