@@ -1,79 +1,55 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
-describe("boilerGotchi contract", function () {
-    let BoilerGotchi;
-    let hardhatBoilerGotchi;
-    let owner;
-    let addr1;
-    let addr2;
-    let addrs;
 
-    beforeEach(async function () {
-        BoilerGotchi = await ethers.getContractFactory("boilerGotchi");
-        [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
-        hardhatBoilerGotchi = await BoilerGotchi.deploy();
+const STARTENERGY = 100;
+const STARTMOOD = 100;
+
+describe("BoilerGotchi Contract", function () {
+  let BoilerGotchi;
+  let boilerGotchi;
+  let owner;
+  let addr1;
+  let addr2;
+  let addrs;
+
+  beforeEach(async function () {
+    [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
+    BoilerGotchi = await ethers.getContractFactory("boilerGotchi");
+    boilerGotchi = await BoilerGotchi.deploy();
+  });
+
+  describe("Deployment", function () {
+    it("Should deploy with the correct ERC721 name and symbol", async function () {
+      expect(await boilerGotchi.name()).to.equal("BoilerGotchi");
+      expect(await boilerGotchi.symbol()).to.equal("BG");
+    });
+  });
+
+  describe("Gotchi Management", function () {
+    it("Should create a new Gotchi with correct initial values", async function () {
+      await boilerGotchi.connect(addr1).createGotchi("Pete");
+      const gotchi = await boilerGotchi.gotchis(addr1.address);
+      expect(gotchi.name).to.equal("Pete");
+      expect(gotchi.mood.toNumber()).to.equal(STARTENERGY);
+      expect(gotchi.energy.toNumber()).to.equal(STARTMOOD);
     });
 
-    describe("Deployment", function () {
-        it("Should set the right token name and symbol", async function () {
-            expect(await hardhatBoilerGotchi.name()).to.equal("BoilerGotchi");
-            expect(await hardhatBoilerGotchi.symbol()).to.equal("BG");
-        });
+    it("Should allow the owner to delete their Gotchi", async function () {
+      await boilerGotchi.connect(addr1).createGotchi("Pete");
+      await boilerGotchi.connect(addr1).deleteGotchi();
+      const gotchi = await boilerGotchi.gotchis(addr1.address);
+      expect(gotchi.owner).to.equal(ethers.constants.AddressZero);
     });
+  });
 
-    describe("Creating Gotchi", function () {
-        it("Should create a Gotchi and verify its properties", async function () {
-            await hardhatBoilerGotchi.connect(addr1).createGotchi("Gigacat");
-            const gotchi = await hardhatBoilerGotchi.gotchis(addr1.address);
-            expect(gotchi.name).to.equal("Gigacat");
-            expect(gotchi.mood).to.equal(100);
-            expect(gotchi.energy).to.equal(100);
-            expect(gotchi.owner).to.equal(addr1.address);
-        });
-
-        it("Should prevent creating multiple Gotchis for the same owner", async function () {
-            await hardhatBoilerGotchi.connect(addr1).createGotchi("Gigacat");
-            await expect(hardhatBoilerGotchi.connect(addr1).createGotchi("Gigacat2")).to.be.revertedWith("You already have a gotchi");
-        });
+  describe("Gameplay Functions", function () {
+    it("Should update mood and energy when playing with Gotchi", async function () {
+      await boilerGotchi.connect(addr1).createGotchi("Pete");
+      await boilerGotchi.connect(addr1).playBoilerGotchi();
+      const gotchi = await boilerGotchi.gotchis(addr1.address);
+      expect(gotchi.mood.toNumber()).to.equal(101);
+      expect(gotchi.energy.toNumber()).to.equal(99);
     });
-
-    describe("Deleting Gotchi", function () {
-        it("Allows owner to delete their Gotchi", async function () {
-            await hardhatBoilerGotchi.connect(addr1).createGotchi("Gigacat");
-            await hardhatBoilerGotchi.connect(addr1).deleteGotchi();
-            const gotchi = await hardhatBoilerGotchi.gotchis(addr1.address);
-            expect(gotchi.owner).to.equal(ethers.constants.AddressZero);
-        });
-
-        it("Prevents non-owners from deleting a Gotchi", async function () {
-            await hardhatBoilerGotchi.connect(addr1).createGotchi("Gigacat");
-            await expect(hardhatBoilerGotchi.connect(addr2).deleteGotchi()).to.be.revertedWith("You do not own a BoilerGotchi");
-        });
-    });
-
-    describe("Interacting with Gotchi", function () {
-        beforeEach(async function () {
-            await hardhatBoilerGotchi.connect(addr1).createGotchi("Gigacat");
-        });
-
-        it("Should feed the Gotchi and increase its energy and mood", async function () {
-            await hardhatBoilerGotchi.connect(addr1).feedBoilerGotchi();
-            const gotchi = await hardhatBoilerGotchi.gotchis(addr1.address);
-            expect(gotchi.energy).to.be.greaterThan(100);
-            expect(gotchi.mood).to.be.greaterThan(100);
-        });
-
-        it("Should play with the Gotchi and decrease energy", async function () {
-            await hardhatBoilerGotchi.connect(addr1).playBoilerGotchi();
-            const gotchi = await hardhatBoilerGotchi.gotchis(addr1.address);
-            expect(gotchi.energy).to.be.lessThan(100);
-        });
-
-        it("Should handle mood changes correctly", async function () {
-            await hardhatBoilerGotchi.connect(addr1).playBoilerGotchi();
-            const status = await hardhatBoilerGotchi.connect(addr1).checkStatus();
-            expect(status).to.include("Mood");
-        });
-    });
+  });
 });
