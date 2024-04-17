@@ -70,8 +70,8 @@ contract boilerGotchi is ERC721 {
         return g.energy;
     }
 
-    function setBoilergotchiEnergyPoints(uint256 id, uint256 energy) public {
-        require(msg.sender == ownerOf(id), "Caller is not the owner.");
+    function setBoilergotchiEnergyPoints(uint256 energy) public {
+        require(gotchis[msg.sender].owner == msg.sender, "Caller is not the owner.");
         Gotchi storage g = gotchis[msg.sender];
         g.energy = energy;
 	}
@@ -87,15 +87,15 @@ contract boilerGotchi is ERC721 {
     }
 
     function playBoilerGotchi() public {
+        require(gotchis[msg.sender].energy != 0, "Your gotchi has no energy");
         if (gotchis[msg.sender].mood != 365) {
             gotchis[msg.sender].mood++;
         }
-        if (gotchis[msg.sender].energy != 0) {
-            gotchis[msg.sender].energy--;
-        }
+        gotchis[msg.sender].energy--;
+        gotchis[msg.sender].lastPlayed = block.timestamp;
     }
 
-    function checkSuicidal() internal view returns(bool) {
+    function checkSuicidal() public view returns(bool) {
         Gotchi storage g = gotchis[msg.sender];
         return (block.timestamp - g.lastPlayed > 365 days); // suicidal if it hasn't been played with or fed in 365 days
     }
