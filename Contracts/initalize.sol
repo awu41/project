@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 //import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract boilerGotchi is ERC721 {
@@ -56,7 +56,7 @@ contract boilerGotchi is ERC721 {
     }
 
     function getBoilergotchiName(address user_addr) public view returns (string memory) {
-        require(ownerOf(user_addr) != address(0), "BoilerGotchi does not exist.");
+        require(gotchis[user_addr].owner != address(0), "BoilerGotchi does not exist.");
         return names[user_addr];
     }
 
@@ -66,13 +66,13 @@ contract boilerGotchi is ERC721 {
     }
 
     function getBoilergotchiEnergyPoints(uint256 id) public view returns (uint256) {
-        Gotchi storage g = gotchis[id];
+        Gotchi storage g = gotchis[msg.sender];
         return g.energy;
     }
 
     function setBoilergotchiEnergyPoints(uint256 id, uint256 energy) public {
         require(msg.sender == ownerOf(id), "Caller is not the owner.");
-        Gotchi storage g = gotchis[id];
+        Gotchi storage g = gotchis[msg.sender];
         g.energy = energy;
 	}
 
@@ -95,15 +95,15 @@ contract boilerGotchi is ERC721 {
         }
     }
 
-    function checkSuicidal(uint256 id) internal view returns(bool) {
-        Gotchi storage g = gotchis[id];
+    function checkSuicidal() internal view returns(bool) {
+        Gotchi storage g = gotchis[msg.sender];
         return (block.timestamp - g.lastPlayed > 365 days); // suicidal if it hasn't been played with or fed in 365 days
     }
 
-    function getMood(uint256 id) public returns (string memory) {
+    function getMood() view public returns (string memory) {
 		//first check to see if gotchi is suicidal
-		Gotchi storage g = gotchis[id];
-		if (checkSuicidal(id)) {
+		Gotchi storage g = gotchis[msg.sender];
+		if (checkSuicidal()) {
 			return "Suicidal";
 		}
         else if (g.mood >= 200) { // Happy if mood has score 200+
@@ -136,11 +136,11 @@ contract boilerGotchi is ERC721 {
 		return string(buffer);
     }
 
-    function checkStatus(uint256 id) public view returns (string memory) {
-		require(msg.sender == ownerOf(id), "Caller is not the owner.");
-        Gotchi storage g = gotchis[id];
+    function checkStatus() public view returns (string memory) {
+        Gotchi storage g = gotchis[msg.sender];
 		//get the mood of gotchi
-		string memory moodDescription = getMood(id);
+		string memory moodDescription = getMood();
 		return string(abi.encodePacked("Name: ", g.name, "\nMood: ", moodDescription, "\nEnergy: ", uint256ToString(g.energy)));
     }
+
 }
