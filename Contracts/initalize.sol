@@ -74,41 +74,54 @@ contract boilerGotchi is ERC721 {
         require(msg.sender == ownerOf(id), "Caller is not the owner.");
         Gotchi storage g = gotchis[id];
         g.energy = energy;
-    }
-
-	function checkSuicidal(uint256 id) internal {
-        Gotchi storage g = gotchis[id];
-        if (block.timestamp - g.lastPlayed > 365 days) {
-            g.mood = -1; // suicidal mood
-        }
-    }
-
-	function getMood(uint256 id) public view returns (string memory) {
-		//first check to see if gotchi is suicidal
-		checkSuicidal(id);
-		Gotchi storage g = gotchis[id];
-        if (g.mood >= 200) { // Happy if mood has score 200+
-            return "Happy";
-        }
-		else if (g.mood >= 100) { // Chill if mood has score 100 - 199
-            return "Chill";
-        }
-		else if (g.mood >= 1) { // Sad if mood has score 0-99
-            return "Sad";
-        }
-		else {
-            return "Suicidal"; // Suicidal if mood has score -1 (hasn't been played or fed in 365 days)
-        }
 	}
 
-	function checkStatus(uint256 id) public view returns (string memory) {
-		require(msg.sender == ownerOf(id), "Caller is not the owner.");
+    function checkSuicidal(uint256 id) internal view returns(bool) {
         Gotchi storage g = gotchis[id];
-		//check if gotchi is suicidal and update mood
-        checkSuicidal(id);
-		//get the mood of gotchi
-        string memory moodDescription = getMood(id);
-        return string(abi.encodePacked("Name: ", g.name, "\nMood: ", moodDescription, "\nEnergy: ", uint256ToString(g.energy)));
+        return (block.timestamp - g.lastPlayed > 365 days); // suicidal if it hasn't been played with or fed in 365 days
     }
 
+    function getMood(uint256 id) public returns (string memory) {
+		//first check to see if gotchi is suicidal
+		Gotchi storage g = gotchis[id];
+		if (checkSuicidal(id)) {
+			return "Suicidal";
+		}
+        else if (g.mood >= 200) { // Happy if mood has score 200+
+            return "Happy";
+		}
+		else if (g.mood >= 100) { // Chill if mood has score 100 - 199
+            return "Chill";
+		}
+		else if (g.mood >= 1) { // Sad if mood has score 0-99
+            return "Sad";
+		}
+    }
+
+    function uint256ToString(uint256 _value) internal pure returns (string memory) {
+		if (_value == 0) {
+			return "0";
+		}
+		uint256 temp = _value;
+		uint256 digits;
+		while (temp != 0) {
+			digits++;
+			temp /= 10;
+		}
+		bytes memory buffer = new bytes(digits);
+		while (_value != 0) {
+		digits -= 1;
+		buffer[digits] = bytes1(uint8(48 + uint256(_value % 10)));
+		_value /= 10;
+		}
+		return string(buffer);
+    }
+
+    function checkStatus(uint256 id) public view returns (string memory) {
+		require(msg.sender == ownerOf(id), "Caller is not the owner.");
+        Gotchi storage g = gotchis[id];
+		//get the mood of gotchi
+		string memory moodDescription = getMood(id);
+		return string(abi.encodePacked("Name: ", g.name, "\nMood: ", moodDescription, "\nEnergy: ", uint256ToString(g.energy)));
+    }
 }
