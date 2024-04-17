@@ -76,6 +76,25 @@ contract boilerGotchi is ERC721 {
         g.energy = energy;
 	}
 
+    function feedBoilerGotchi() public {
+        // Function to will feed apto gotchi by one
+        if (gotchis[msg.sender].energy != 100) {
+            gotchis[msg.sender].energy++;
+        }
+        if (gotchis[msg.sender].mood != 365) {
+            gotchis[msg.sender].mood++;
+        }
+    }
+
+    function playBoilerGotchi() public {
+        if (gotchis[msg.sender].mood != 365) {
+            gotchis[msg.sender].mood++;
+        }
+        if (gotchis[msg.sender].energy != 0) {
+            gotchis[msg.sender].energy--;
+        }
+    }
+
     function checkSuicidal(uint256 id) internal view returns(bool) {
         Gotchi storage g = gotchis[id];
         return (block.timestamp - g.lastPlayed > 365 days); // suicidal if it hasn't been played with or fed in 365 days
