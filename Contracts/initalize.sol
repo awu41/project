@@ -42,7 +42,7 @@ contract boilerGotchi is ERC721 {
         delete gotchis[msg.sender];
     }
 
-    function _getGotchiTokenId(address owner) private view returns (uint256) {
+    function _getGotchiTokenId(address owner) public view returns (uint256) {
         require(gotchis[owner].owner == owner, "Owner does not have a BoilerGotchi");
         uint256 tokenId;
         for (uint256 i = 1; i <= nextID; i++) {
@@ -146,6 +146,7 @@ contract boilerGotchi is ERC721 {
     }
 
     function transfer(address from, address to) public {
+        require(gotchis[msg.sender].owner == from, "ERC721: transfer caller is not owner nor approved");
         uint256 tokenId = _getGotchiTokenId(from);
             transferFrom(from, to, tokenId);
     }

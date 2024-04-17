@@ -92,7 +92,29 @@ describe("BoilerGotchi Contract", function () {
         await boilerGotchi.connect(addr1).createGotchi("Pete");
         await boilerGotchi.connect(addr1).setBoilergotchiEnergyPoints(0);
         await expect(boilerGotchi.connect(addr1).playBoilerGotchi()).to.be.revertedWith("Your gotchi has no energy");
-    });    
+    });
+  });
+
+  describe("Transfering Gotchis", function () {
+
+    it("Should transfer a Gotchi from one address to another using the custom transfer function", async function() {
+        await boilerGotchi.connect(addr1).createGotchi("GothiForAdcdr1");
+        const tokenId = await boilerGotchi._getGotchiTokenId(addr1.address);
+
+        expect(await boilerGotchi.ownerOf(tokenId)).to.equal(addr1.address);
+
+        await boilerGotchi.connect(addr1).transfer(addr1.address, addr2.address);
+
+        expect(await boilerGotchi.ownerOf(tokenId)).to.equal(addr2.address);
+    });
+
+    it("Should revert if an unauthorized user tries to transfer a Gotchi", async function() {
+        await boilerGotchi.connect(addr1).createGotchi("GotchiForAddr1");
+        const tokenId = await boilerGotchi._getGotchiTokenId(addr1.address);
+
+        await expect(boilerGotchi.connect(addr2).transfer(addr1.address, addr2.address))
+            .to.be.revertedWith("ERC721: transfer caller is not owner nor approved");
+    });
 
   });
 });
