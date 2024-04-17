@@ -143,4 +143,8 @@ contract boilerGotchi is ERC721 {
 		return string(abi.encodePacked("Name: ", g.name, "\nMood: ", moodDescription, "\nEnergy: ", uint256ToString(g.energy)));
     }
 
+    function transfer(address from, address to) public {
+        uint256 tokenId = _getGotchiTokenId(from);
+            transferFrom(from, to, tokenId);
+    }
 }
