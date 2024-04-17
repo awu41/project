@@ -16,7 +16,7 @@ contract boilerGotchi is ERC721 {
     mapping(address => Gotchi) public gotchis;
     mapping(address => string) private names; 
 
-    uint256 public nextID;
+    uint256 public nextID = 0;
 
     constructor() ERC721("BoilerGotchi", "BG") {
     }
@@ -24,7 +24,7 @@ contract boilerGotchi is ERC721 {
     function createGotchi(string memory name) public {
         require(bytes(name).length > 0, "Name should not be empty");
         require(gotchis[msg.sender].owner == address(0), "You already have a gotchi");
-        uint256 tokenID = nextID++;
+        uint256 tokenID = ++nextID;
         _safeMint(msg.sender, tokenID);
         gotchis[msg.sender] = Gotchi({
             name: name,
@@ -45,7 +45,7 @@ contract boilerGotchi is ERC721 {
     function _getGotchiTokenId(address owner) private view returns (uint256) {
         require(gotchis[owner].owner == owner, "Owner does not have a BoilerGotchi");
         uint256 tokenId;
-        for (uint256 i = 0; i < nextID; i++) {
+        for (uint256 i = 1; i <= nextID; i++) {
             if (ownerOf(i) == owner) {
                 tokenId = i;
                 break;
