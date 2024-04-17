@@ -16,7 +16,7 @@ contract boilerGotchi is ERC721 {
     mapping(address => Gotchi) public gotchis;
     mapping(address => string) private names; 
 
-    uint256 public nextID = 1;
+    uint256 public nextID;
 
     constructor() ERC721("BoilerGotchi", "BG") {
     }
@@ -45,7 +45,7 @@ contract boilerGotchi is ERC721 {
     function _getGotchiTokenId(address owner) private view returns (uint256) {
         require(gotchis[owner].owner == owner, "Owner does not have a BoilerGotchi");
         uint256 tokenId;
-        for (uint256 i = 1; i <= nextID; i++) {
+        for (uint256 i = 0; i < nextID; i++) {
             if (ownerOf(i) == owner) {
                 tokenId = i;
                 break;
@@ -55,44 +55,47 @@ contract boilerGotchi is ERC721 {
         return tokenId;
     }
 
-    function getBoilergotchiName(address user_addr) public view returns (string memory) {
-        require(gotchis[user_addr].owner != address(0), "BoilerGotchi does not exist.");
-        return names[user_addr];
+    function getBoilergotchiName() public view returns (string memory) {
+        require(gotchis[msg.sender].owner != address(0), "BoilerGotchi does not exist.");
+        return names[msg.sender];
     }
 
-    function setBoilergotchiName(address user_addr, string memory name) public {
-        require(user_addr == msg.sender, "Caller is not the owner.");
-        names[user_addr] = name;
-    }
+    ///function setBoilergotchiName(address user_addr, string memory name) public {
+     //   require(user_addr == msg.sender, "Caller is not the owner.");
+       // names[user_addr] = name;
+    //}
 
     function getBoilergotchiEnergyPoints() public view returns (uint256) {
+        // Access the gotchi with the specified ID
         Gotchi storage g = gotchis[msg.sender];
+        // Return the energy points
         return g.energy;
     }
 
-    function setBoilergotchiEnergyPoints(uint256 id, uint256 energy) public {
-        require(msg.sender == ownerOf(id), "Caller is not the owner.");
-        Gotchi storage g = gotchis[msg.sender];
-        g.energy = energy;
-	}
+    //function setBoilergotchiEnergyPoints(uint256 id, uint256 energy) public {
+      //  require(msg.sender == ownerOf(id), "Caller is not the owner.");
+        //Gotchi storage g = gotchis[msg.sender];
+        //g.energy = energy;
+	//}
 
     function feedBoilerGotchi() public {
         // Function to will feed apto gotchi by one
         if (gotchis[msg.sender].energy != 100) {
-            gotchis[msg.sender].energy++;
+            gotchis[msg.sender].energy += 10;
         }
-        if (gotchis[msg.sender].mood != 365) {
-            gotchis[msg.sender].mood++;
+        if (gotchis[msg.sender].mood != 350) {
+            gotchis[msg.sender].mood += 35;
         }
     }
 
     function playBoilerGotchi() public {
-        if (gotchis[msg.sender].mood != 365) {
-            gotchis[msg.sender].mood++;
+        if (gotchis[msg.sender].mood <= 350) {
+            gotchis[msg.sender].mood += 35;
         }
-        if (gotchis[msg.sender].energy != 0) {
-            gotchis[msg.sender].energy--;
+        if (gotchis[msg.sender].energy >= 10) {
+            gotchis[msg.sender].energy -= 10;
         }
+        
     }
 
     function checkSuicidal() internal view returns(bool) {
